@@ -31,7 +31,7 @@ namespace ZWaveLib.WebAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ZWaveLib.WebAPI", Version = "v1" });
             });
 
-            services.AddSingleton(x => new ZWaveController(Configuration["ZWave:ComPort"]));
+            services.AddSingleton(x => new ZWaveController(Configuration["ZWave:Port"]));
 
             services.AddSingleton<IZWaveEventService, ZWaveEventService>();
         }

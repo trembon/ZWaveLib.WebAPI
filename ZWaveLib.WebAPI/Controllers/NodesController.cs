@@ -9,34 +9,34 @@ using ZWaveLib.WebAPI.Models;
 namespace ZWaveLib.WebAPI.Controllers
 {
     [ApiController]
-    public class DevicesController : ControllerBase
+    public class NodesController : ControllerBase
     {
         private ZWaveController controller;
 
-        public DevicesController(ZWaveController controller)
+        public NodesController(ZWaveController controller)
         {
             this.controller = controller;
         }
 
-        [HttpGet("/devices/")]
-        public ActionResult<IEnumerable<Device>> GetAll()
+        [HttpGet("/nodes/")]
+        public ActionResult<IEnumerable<NodeModel>> GetAll()
         {
             if (controller.Status != ControllerStatus.Ready)
                 return StatusCode((int)HttpStatusCode.InternalServerError, "Controller is not ready yet.");
 
-            var devices = controller.Nodes.Select(n => new Device
+            var devices = controller.Nodes.Select(n => new NodeModel
             {
                 ID = n.Id,
                 ProtocolInfo = n.ProtocolInfo,
                 ManufacturerSpecific = n.ManufacturerSpecific,
-                SupportedCommands = n.CommandClasses.Select(cc => cc.CommandClass.ToString()).ToList()
+                SupportedCommands = n.CommandClasses
             }).ToList();
 
             return Ok(devices);
         }
 
-        [HttpGet("/devices/{id}")]
-        public ActionResult<Device> Get(byte id)
+        [HttpGet("/nodes/{id}")]
+        public ActionResult<NodeModel> Get(byte id)
         {
             if (controller.Status != ControllerStatus.Ready)
                 return StatusCode((int)HttpStatusCode.InternalServerError, "Controller is not ready yet.");
@@ -45,12 +45,12 @@ namespace ZWaveLib.WebAPI.Controllers
             if (node == null)
                 return NotFound();
 
-            return Ok(new Device
+            return Ok(new NodeModel
             {
                 ID = node.Id,
                 ProtocolInfo = node.ProtocolInfo,
                 ManufacturerSpecific = node.ManufacturerSpecific,
-                SupportedCommands = node.CommandClasses.Select(cc => cc.CommandClass.ToString()).ToList()
+                SupportedCommands = node.CommandClasses
             });
         }
     }

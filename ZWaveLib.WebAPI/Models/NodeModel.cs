@@ -6,7 +6,7 @@ using ZWaveLib.CommandClasses;
 
 namespace ZWaveLib.WebAPI.Models
 {
-    public class Device
+    public class NodeModel
     {
         public byte ID { get; set; }
 
@@ -14,6 +14,6 @@ namespace ZWaveLib.WebAPI.Models
 
         public ManufacturerSpecificInfo ManufacturerSpecific { get; set; }
 
-        public List<string> SupportedCommands { get; set; }
+        public List<NodeCommandClass> SupportedCommands { get; set; }
     }
 }
