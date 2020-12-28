@@ -28,8 +28,14 @@ namespace ZWaveLib.WebAPI.Services
             controller.DiscoveryProgress += Controller_DiscoveryProgress;
             controller.NodeOperationProgress += Controller_NodeOperationProgress;
             controller.NodeUpdated += Controller_NodeUpdated;
+            controller.HealProgress += Controller_HealProgress;
 
             controller.Connect();
+        }
+
+        private void Controller_HealProgress(object sender, HealProgressEventArgs args)
+        {
+            logger.LogInformation($"Heal progress changed to {args.Status}");
         }
 
         private void Controller_NodeUpdated(object sender, NodeUpdatedEventArgs args)

@@ -6,10 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ZWaveLib.WebAPI.Extensions;
+using ZWaveLib.WebAPI.ScheduledJobs;
 using ZWaveLib.WebAPI.Services;
 
 namespace ZWaveLib.WebAPI
@@ -34,6 +37,8 @@ namespace ZWaveLib.WebAPI
             services.AddSingleton(x => new ZWaveController(Configuration["ZWave:Port"]));
 
             services.AddSingleton<IZWaveEventService, ZWaveEventService>();
+
+            services.AddQuartz();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IZWaveEventService eventService)
@@ -52,6 +57,14 @@ namespace ZWaveLib.WebAPI
             {
                 endpoints.MapControllers();
             });
+
+            if (Configuration.GetValue<string>("ZWave:HealNetworkCron") != null)
+            {
+                app.UseQuartz(q =>
+                {
+                    q.CreateScheduleJob<HealNetworkScheduledJob>(s => s.WithCronSchedule(Configuration.GetValue<string>("ZWave:HealNetworkCron")));
+                });
+            }
         }
     }
 }
