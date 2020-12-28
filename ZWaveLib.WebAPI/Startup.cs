@@ -37,6 +37,7 @@ namespace ZWaveLib.WebAPI
             services.AddSingleton(x => new ZWaveController(Configuration["ZWave:Port"]));
 
             services.AddSingleton<IZWaveEventService, ZWaveEventService>();
+            services.AddSingleton<IWebhookService, WebhookService>();
 
             services.AddQuartz();
         }

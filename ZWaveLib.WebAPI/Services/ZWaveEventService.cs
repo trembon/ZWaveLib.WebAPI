@@ -14,11 +14,13 @@ namespace ZWaveLib.WebAPI.Services
     public class ZWaveEventService : IZWaveEventService
     {
         private readonly ZWaveController controller;
+        private readonly IWebhookService webhookService;
         private readonly ILogger<ZWaveEventService> logger;
 
-        public ZWaveEventService(ZWaveController controller, ILogger<ZWaveEventService> logger)
+        public ZWaveEventService(ZWaveController controller, IWebhookService webhookService, ILogger<ZWaveEventService> logger)
         {
             this.controller = controller;
+            this.webhookService = webhookService;
             this.logger = logger;
         }
 
@@ -33,24 +35,29 @@ namespace ZWaveLib.WebAPI.Services
             controller.Connect();
         }
 
-        private void Controller_HealProgress(object sender, HealProgressEventArgs args)
+        private async void Controller_HealProgress(object sender, HealProgressEventArgs args)
         {
             logger.LogInformation($"Heal progress changed to {args.Status}");
+            await webhookService.SendHealProgressWebHook(args.Timestamp, args.Status);
         }
 
-        private void Controller_NodeUpdated(object sender, NodeUpdatedEventArgs args)
+        private async void Controller_NodeUpdated(object sender, NodeUpdatedEventArgs args)
         {
             logger.LogInformation($"Node {args.NodeId} updated.");
+            await webhookService.SendNodeUpdateWebHook(args.NodeId, args.Timestamp, args.Event.Parameter, args.Event.Value);
         }
 
-        private void Controller_NodeOperationProgress(object sender, NodeOperationProgressEventArgs args)
+        private async void Controller_NodeOperationProgress(object sender, NodeOperationProgressEventArgs args)
         {
             logger.LogInformation($"Node {args.NodeId} operation progressed.");
+            await webhookService.SendNodeOperationProgressWebHook(args.NodeId, args.Timestamp, args.Status);
         }
 
-        private void Controller_DiscoveryProgress(object sender, DiscoveryProgressEventArgs args)
+        private async void Controller_DiscoveryProgress(object sender, DiscoveryProgressEventArgs args)
         {
             logger.LogInformation($"Discovery progress changed to {args.Status}.");
+            await webhookService.SendDiscoveryProgressWebHook(args.Timestamp, args.Status);
+
             switch (args.Status)
             {
                 case DiscoveryStatus.DiscoveryStart:
@@ -61,9 +68,10 @@ namespace ZWaveLib.WebAPI.Services
             }
         }
 
-        private void Controller_ControllerStatusChanged(object sender, ControllerStatusEventArgs args)
+        private async void Controller_ControllerStatusChanged(object sender, ControllerStatusEventArgs args)
         {
             logger.LogInformation($"Controller status changed to {args.Status}.");
+            await webhookService.SendControllerStatusWebHook(args.Timestamp, args.Status);
 
             var controller = (sender as ZWaveController);
             switch (args.Status)
