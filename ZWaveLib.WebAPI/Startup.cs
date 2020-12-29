@@ -42,7 +42,7 @@ namespace ZWaveLib.WebAPI
             services.AddQuartz();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IZWaveEventService eventService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IZWaveEventService eventService, IHostApplicationLifetime hostApplicationLifetime, ZWaveController zwaveController)
         {
             if (env.IsDevelopment())
             {
@@ -50,6 +50,8 @@ namespace ZWaveLib.WebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ZWaveLib.WebAPI v1"));
             }
+
+            hostApplicationLifetime.ApplicationStopping.Register(() => Shutdown(zwaveController));
 
             eventService.Initialize();
 
@@ -66,6 +68,12 @@ namespace ZWaveLib.WebAPI
                     q.CreateScheduleJob<HealNetworkScheduledJob>(s => s.WithCronSchedule(Configuration.GetValue<string>("ZWave:HealNetworkCron")));
                 });
             }
+        }
+
+        public void Shutdown(ZWaveController zwaveController)
+        {
+            zwaveController.Disconnect();
+            zwaveController.Dispose();
         }
     }
 }
